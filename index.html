@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Campaign Portal — Branch</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070d1a;--surface:#0f1929;--surface2:#162035;--border:#1c2c44;
+  --accent:#3b82f6;--accent2:#06b6d4;--accentglow:rgba(59,130,246,.12);
+  --success:#10b981;--warning:#f59e0b;--danger:#ef4444;
+  --text:#e2e8f0;--text2:#94a3b8;--muted:#4b6280;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;
+  background-image:radial-gradient(ellipse at 15% 0%,rgba(59,130,246,.09) 0%,transparent 55%),
+  radial-gradient(ellipse at 85% 100%,rgba(6,182,212,.06) 0%,transparent 55%)}
+
+/* ── HEADER ── */
+.header{background:linear-gradient(135deg,rgba(13,27,42,.98),rgba(22,40,73,.98));
+  border-bottom:1px solid var(--border);padding:0 20px;height:60px;
+  display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;backdrop-filter:blur(10px)}
+.logo{width:38px;height:38px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-family:'Syne',sans-serif;font-weight:800;font-size:17px;color:#fff;
+  box-shadow:0 4px 14px rgba(59,130,246,.3);flex-shrink:0}
+.header-text .title{font-family:'Syne',sans-serif;font-weight:700;font-size:17px}
+.header-text .sub{font-size:11px;color:var(--text2)}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.date-pill{background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+  padding:5px 12px;font-size:12px;color:var(--accent2);font-weight:600}
+.refresh-btn{background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+  padding:5px 11px;font-size:12px;color:var(--text2);cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif}
+.refresh-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ── BANNER CAROUSEL ── */
+.carousel{position:relative;width:100%;height:160px;overflow:hidden;background:var(--surface2);
+  border-radius:0 0 0 0}
+.carousel-track{display:flex;height:100%;transition:transform .5s ease}
+.carousel-slide{min-width:100%;height:100%;object-fit:cover;flex-shrink:0}
+.carousel-slide.placeholder{display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,var(--surface2),var(--surface);color:var(--muted);font-size:13px}
+.carousel-dots{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
+  display:flex;gap:5px}
+.cdot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.35);cursor:pointer;transition:all .3s}
+.cdot.active{background:#fff;width:18px;border-radius:3px}
+.carousel-caption{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.6));
+  padding:20px 16px 8px;font-size:12px;font-weight:600;color:#fff}
+
+/* ── CONTAINER ── */
+.container{max-width:680px;margin:0 auto;padding:20px 16px}
+
+/* ── BRANCH SELECTOR ── */
+.branch-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;margin-bottom:16px}
+.sec-label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text2);margin-bottom:10px;font-weight:700}
+.search-wrap{position:relative}
+.si{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:15px;pointer-events:none}
+
+/* ── KEY FIX: custom select-like dropdown instead of browser autocomplete ── */
+.branch-display{display:flex;align-items:center;gap:10px;background:var(--surface2);
+  border:1px solid var(--border);border-radius:10px;padding:11px 14px;cursor:pointer;
+  transition:border-color .2s,box-shadow .2s;user-select:none}
+.branch-display:hover,.branch-display.open{border-color:var(--accent);box-shadow:0 0 0 3px var(--accentglow)}
+.bd-icon{font-size:15px;color:var(--muted)}
+.bd-text{flex:1;font-size:15px}
+.bd-text.placeholder{color:var(--muted)}
+.bd-arrow{font-size:11px;color:var(--muted);transition:transform .2s}
+.bd-arrow.open{transform:rotate(180deg)}
+
+.branch-search-input{width:100%;background:var(--surface2);border:1px solid var(--accent);
+  border-radius:10px 10px 0 0;color:var(--text);padding:11px 14px 11px 40px;
+  font-family:'DM Sans',sans-serif;font-size:15px;outline:none;display:none}
+.branch-search-input.show{display:block}
+
+.dropdown{position:absolute;top:100%;left:0;right:0;background:var(--surface);
+  border:1px solid var(--accent);border-top:none;border-radius:0 0 10px 10px;
+  max-height:240px;overflow-y:auto;z-index:300;display:none;box-shadow:0 12px 40px rgba(0,0,0,.5)}
+.dropdown.show{display:block}
+.drop-item{padding:11px 16px;cursor:pointer;font-size:14px;border-bottom:1px solid var(--border);
+  transition:background .12s;display:flex;align-items:center;gap:8px}
+.drop-item:last-child{border-bottom:none}
+.drop-item:hover,.drop-item.sel{background:rgba(59,130,246,.1);color:var(--accent)}
+.drop-item mark{background:transparent;color:var(--accent2);font-weight:700}
+.drop-item .branch-initial{width:24px;height:24px;border-radius:6px;background:var(--surface2);
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;
+  color:var(--accent);flex-shrink:0}
+
+.branch-confirmed{margin-top:10px;font-size:13px;color:var(--success);
+  display:flex;align-items:center;gap:6px}
+
+/* ── INFO STRIP ── */
+.info-strip{background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px}
+.info-dot{width:8px;height:8px;border-radius:50%;background:var(--success);
+  box-shadow:0 0 8px rgba(16,185,129,.5);flex-shrink:0;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.info-date{font-size:13px;font-weight:600}
+.info-sub{font-size:12px;color:var(--text2);margin-top:1px}
+
+/* ── CAMPAIGN BLOCKS ── */
+.camp-block{background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  padding:20px;margin-bottom:14px;transition:border-color .2s}
+.camp-block:hover{border-color:rgba(59,130,246,.3)}
+.camp-header{display:flex;align-items:center;gap:10px;margin-bottom:18px;
+  padding-bottom:14px;border-bottom:1px solid var(--border)}
+.camp-dot{width:9px;height:9px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  box-shadow:0 0 10px rgba(59,130,246,.5);flex-shrink:0;animation:pulse 2s infinite}
+.camp-name{font-family:'Syne',sans-serif;font-weight:800;font-size:16px}
+.camp-badge{margin-left:auto;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.2);
+  color:var(--success);border-radius:20px;padding:3px 10px;font-size:10px;font-weight:700;
+  text-transform:uppercase;letter-spacing:.5px}
+
+/* ── PARAM GROUPS ── */
+.pg{margin-bottom:16px;padding:14px;background:var(--surface2);border:1px solid var(--border);border-radius:12px}
+.pg:last-child{margin-bottom:0}
+.pg-name{font-size:11px;font-weight:700;color:var(--accent2);text-transform:uppercase;
+  letter-spacing:1px;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.pg-name::after{content:'';flex:1;height:1px;background:var(--border)}
+.cols-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.col-field label{display:block;font-size:11px;color:var(--text2);margin-bottom:6px;font-weight:600}
+.col-field input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:9px;
+  color:var(--text);padding:10px 12px;font-family:'DM Sans',sans-serif;font-size:15px;
+  outline:none;transition:border-color .2s,box-shadow .2s;text-align:center}
+.col-field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accentglow)}
+.prev-note{font-size:11px;color:var(--muted);margin-top:5px;text-align:center}
+.prev-note strong{color:var(--warning)}
+
+/* ── SUBMIT BUTTON ── */
+.submit-section{margin-top:8px;margin-bottom:30px}
+.btn-submit{width:100%;padding:16px;border:none;border-radius:14px;
+  font-family:'Syne',sans-serif;font-weight:800;font-size:17px;cursor:pointer;letter-spacing:.5px;
+  background:linear-gradient(135deg,#2563eb,#0891b2);color:#fff;
+  box-shadow:0 4px 24px rgba(37,99,235,.35);transition:all .25s;
+  display:flex;align-items:center;justify-content:center;gap:10px;position:relative;overflow:hidden}
+.btn-submit::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,#1d4ed8,#0e7490);
+  opacity:0;transition:opacity .2s}
+.btn-submit:hover::before{opacity:1}
+.btn-submit:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(37,99,235,.45)}
+.btn-submit:active{transform:translateY(0)}
+.btn-submit:disabled{opacity:.6;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-submit span{position:relative;z-index:1}
+.submit-hint{text-align:center;font-size:12px;color:var(--muted);margin-top:8px}
+
+/* ── EMPTY / WARN ── */
+.empty{text-align:center;padding:48px 20px;color:var(--muted)}
+.empty .icon{font-size:52px;margin-bottom:14px}
+.empty h3{font-family:'Syne',sans-serif;font-weight:700;font-size:16px;color:var(--text2);margin-bottom:6px}
+.warn-box{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:12px;
+  padding:13px 16px;margin-bottom:16px;font-size:13px;color:var(--warning);line-height:1.7}
+
+/* ── OVERLAY / TOAST ── */
+.overlay{position:fixed;inset:0;background:rgba(7,13,26,.88);display:none;
+  align-items:center;justify-content:center;z-index:500;flex-direction:column;gap:16px}
+.overlay.show{display:flex}
+.spinner{width:42px;height:42px;border:3px solid var(--border);border-top-color:var(--accent);
+  border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);
+  background:var(--surface);border:1px solid var(--border);border-radius:13px;
+  padding:14px 20px;font-size:13.5px;z-index:1000;
+  transition:transform .35s cubic-bezier(.34,1.56,.64,1);
+  display:flex;align-items:center;gap:10px;min-width:280px;max-width:92vw;
+  box-shadow:0 10px 40px rgba(0,0,0,.5)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.success{border-color:var(--success)}.toast.warning{border-color:var(--warning)}.toast.error{border-color:var(--danger)}
+
+@media(max-width:480px){.cols-grid{grid-template-columns:1fr 1fr}.header-text .title{font-size:15px}.btn-submit{font-size:15px;padding:14px}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">C</div>
+  <div class="header-text">
+    <div class="title">Campaign Portal</div>
+    <div class="sub">Branch Reporting System</div>
+  </div>
+  <div class="header-right">
+    <div class="date-pill" id="hDate"></div>
+    <button class="refresh-btn" onclick="if(selectedBranch)loadCampaigns();else toast('Select your branch first','warning')">↺ Refresh</button>
+  </div>
+</div>
+
+<!-- Banner Carousel -->
+<div class="carousel" id="carousel" style="display:none">
+  <div class="carousel-track" id="carouselTrack"></div>
+  <div class="carousel-dots" id="carouselDots"></div>
+  <div class="carousel-caption" id="carouselCaption"></div>
+</div>
+
+<div class="container">
+
+  <div class="warn-box" id="cfgWarn" style="display:none">
+    ⚠️ <strong>Demo mode:</strong> Replace <code>SCRIPT_URL</code> with your Google Apps Script URL.
+  </div>
+
+  <!-- Branch Selection — custom dropdown, no browser autocomplete issues -->
+  <div class="branch-card">
+    <div class="sec-label">📍 Select Your Branch</div>
+    <div class="search-wrap" id="branchWrap">
+      <!-- Step 1: display button (shows current branch or placeholder) -->
+      <div class="branch-display" id="branchDisplay" onclick="openBranchSearch()">
+        <span class="bd-icon">🏢</span>
+        <span class="bd-text placeholder" id="bdText">Tap to select your branch…</span>
+        <span class="bd-arrow" id="bdArrow">▼</span>
+      </div>
+      <!-- Step 2: search input (shown when dropdown opens) -->
+      <input type="text" class="branch-search-input" id="branchSearchInp"
+        placeholder="🔍  Type branch name to search…"
+        autocomplete="new-password" spellcheck="false"
+        oninput="filterDD(this.value)"
+        onkeydown="handleDDKey(event)">
+      <!-- Dropdown list -->
+      <div class="dropdown" id="dd"></div>
+    </div>
+    <div class="branch-confirmed" id="branchConfirmed" style="display:none">
+      ✅ <strong id="branchConfirmedName"></strong> — tap above to change
+    </div>
+  </div>
+
+  <!-- Date strip -->
+  <div class="info-strip" id="infoStrip" style="display:none">
+    <span class="info-dot"></span>
+    <div>
+      <div class="info-date" id="reportDate"></div>
+      <div class="info-sub">Enter today's campaign data below and submit</div>
+    </div>
+  </div>
+
+  <!-- Campaign blocks -->
+  <div id="campArea"></div>
+
+  <!-- SUBMIT BUTTON -->
+  <div class="submit-section" id="submitSection" style="display:none">
+    <button class="btn-submit" id="submitBtn" onclick="doSubmit()">
+      <span>📤</span><span>Submit Report</span>
+    </button>
+    <div class="submit-hint">You can submit multiple times — values accumulate for the day</div>
+  </div>
+
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="spinner"></div>
+  <div style="font-size:13px;color:var(--muted)" id="overlayMsg">Loading…</div>
+</div>
+<div class="toast" id="toast"><span id="tIcon"></span>&nbsp;<span id="tMsg"></span></div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// ▼ PASTE YOUR APPS SCRIPT WEB APP URL HERE
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwN9X7-c4TwpZLf36_ZOhhkSLCNZRkUQTKigvTYLOg426ZuuOBYZLoGYdJx0rB2wJTbaw/exec';
+// ▲
+// ═══════════════════════════════════════════════════
+
+const BRANCHES = ['MALAPPURAM','THIRUNAVAYA','KOTTAKKAL','OTHUKKUNGAL','PUTHANATHANI','POTHUKKALLU','PULAMANTHOLE','VALANCHERRY','PALAPATTY','PERINTHALMANNA','POOKKOTTUMPADAM','CALICUT ROAD PERINTHALMANNA','KARINKALLATHANI','NILAMBUR TOWN','PBB TIRUR','EDARICODE','MALAPPURAM CIVIL STATION','PULPARAMBA','KARUVARAKUNDU','NRI TIRUR','MANIMOOLY','WANDOOR','TIRUR','PANG SOUTH PANG','MANJERI TOWN','ANGADIPURAM','EDAPPAL TOWN','CHUNGATHARA','PONNANI','EDAKKARA','MAKKARAPARAMBA','PANDIKKAD','CHANGARAMKULAM','B P ANGADI','KUTTIPURAM','CHAMRAVATTOM JUNCTION PONNANI','KALPAKANCHERY','TIRUR TOWN','MANKADA','MANJERI','ELAMKULAM','CHANDAKKUNDU','MELATTUR','VENNIYOOR','PRAVASI SEVA KOTTAKKAL','MALAPPURAM TOWN BRANCH'];
+
+const TODAY    = new Date();
+const DATE_KEY = TODAY.toISOString().split('T')[0];
+const CFG_OK   = SCRIPT_URL !== 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE';
+
+let selectedBranch  = '';
+let activeCampaigns = [];
+let todayTotals     = {};
+let allBranches     = [...BRANCHES]; // may be updated from server
+let carouselImages  = [];
+let carouselIdx     = 0;
+let carouselTimer   = null;
+
+// ── INIT ──────────────────────────────────────────────
+document.getElementById('hDate').textContent =
+  TODAY.toLocaleDateString('en-IN',{weekday:'short',day:'2-digit',month:'short'});
+document.getElementById('reportDate').textContent =
+  TODAY.toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+if (!CFG_OK) document.getElementById('cfgWarn').style.display = 'block';
+
+// Restore saved branch — but always force a fresh data load
+const saved = localStorage.getItem('cpBranch');
+if (saved && BRANCHES.includes(saved)) {
+  // Show the branch as selected but ALWAYS reload campaigns fresh
+  confirmBranchUI(saved);
+  loadCampaigns(); // ← auto-refresh on page load
+}
+
+// ── CUSTOM DROPDOWN (fixes browser autocomplete breaking it) ──
+let ddOpen = false;
+
+function openBranchSearch() {
+  const disp  = document.getElementById('branchDisplay');
+  const sinp  = document.getElementById('branchSearchInp');
+  const dd    = document.getElementById('dd');
+  const arrow = document.getElementById('bdArrow');
+  ddOpen = true;
+  disp.style.display = 'none';
+  sinp.classList.add('show');
+  sinp.value = '';
+  sinp.focus();
+  filterDD('');
+  dd.classList.add('show');
+  arrow.classList.add('open');
+}
+
+function closeBranchSearch() {
+  const disp = document.getElementById('branchDisplay');
+  const sinp = document.getElementById('branchSearchInp');
+  const dd   = document.getElementById('dd');
+  ddOpen = false;
+  disp.style.display = 'flex';
+  sinp.classList.remove('show');
+  dd.classList.remove('show');
+  document.getElementById('bdArrow').classList.remove('open');
+}
+
+function filterDD(q) {
+  const lq  = q.toLowerCase();
+  const list = lq ? allBranches.filter(b=>b.toLowerCase().includes(lq)) : allBranches;
+  const dd   = document.getElementById('dd');
+  dd.innerHTML = list.slice(0,30).map(b => {
+    const hl = lq ? b.replace(new RegExp(lq,'gi'), m=>`<mark>${m}</mark>`) : b;
+    return `<div class="drop-item${b===selectedBranch?' sel':''}" onmousedown="pickBranch('${b.replace(/'/g,"\\'")}')">
+      <span class="branch-initial">${b[0]}</span><span>${hl}</span>
+    </div>`;
+  }).join('') || '<div class="drop-item" style="color:var(--muted)">No results</div>';
+}
+
+function handleDDKey(e) {
+  if (e.key === 'Escape') closeBranchSearch();
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', e => {
+  if (ddOpen && !e.target.closest('#branchWrap')) closeBranchSearch();
+});
+
+function pickBranch(branch) {
+  closeBranchSearch();
+  confirmBranchUI(branch);
+  loadCampaigns();
+}
+
+function confirmBranchUI(branch) {
+  selectedBranch = branch;
+  localStorage.setItem('cpBranch', branch);
+  // Update display button
+  const disp = document.getElementById('branchDisplay');
+  document.getElementById('bdText').textContent = branch;
+  document.getElementById('bdText').classList.remove('placeholder');
+  // Show confirmed label
+  document.getElementById('branchConfirmed').style.display = 'flex';
+  document.getElementById('branchConfirmedName').textContent = branch;
+}
+
+// ── CAROUSEL ──────────────────────────────────────────
+function initCarousel(images) {
+  if (!images || !images.length) { document.getElementById('carousel').style.display='none'; return; }
+  carouselImages = images;
+  carouselIdx    = 0;
+  const track = document.getElementById('carouselTrack');
+  const dots  = document.getElementById('carouselDots');
+  track.innerHTML = images.map(img=>`<img class="carousel-slide" src="${img.src}" alt="${img.caption||''}">`).join('');
+  dots.innerHTML  = images.map((_,i)=>`<div class="cdot${i===0?' active':''}" onclick="goSlide(${i})"></div>`).join('');
+  document.getElementById('carousel').style.display = 'block';
+  updateCarousel();
+  if (carouselTimer) clearInterval(carouselTimer);
+  if (images.length > 1) carouselTimer = setInterval(()=>goSlide((carouselIdx+1)%images.length), 4000);
+}
+
+function goSlide(i) {
+  carouselIdx = i;
+  updateCarousel();
+}
+
+function updateCarousel() {
+  document.getElementById('carouselTrack').style.transform = `translateX(-${carouselIdx*100}%)`;
+  document.querySelectorAll('.cdot').forEach((d,i)=>d.classList.toggle('active',i===carouselIdx));
+  const cap = carouselImages[carouselIdx]?.caption;
+  document.getElementById('carouselCaption').textContent = cap || '';
+}
+
+// ── LOAD CAMPAIGNS ─────────────────────────────────────
+async function loadCampaigns() {
+  if (!selectedBranch) return;
+  showOverlay(true, 'Loading campaigns…');
+  try {
+    if (CFG_OK) {
+      const data      = await apiCall({action:'getCampaigns', branch:selectedBranch, date:DATE_KEY});
+      activeCampaigns = data.campaigns || [];
+      todayTotals     = data.todayData  || {};
+      if (data.banners && data.banners.length) initCarousel(data.banners);
+      if (data.branches && data.branches.length) allBranches = data.branches;
+      // Fire-and-forget visit log
+      apiCall({action:'logVisit', branch:selectedBranch, date:DATE_KEY}).catch(()=>{});
+    } else {
+      // Demo
+      activeCampaigns = [
+        {name:'CYCLING WITH CMC', parameters:[
+          {paramName:'PAI',columns:['Number','Amount']},
+          {paramName:'PAI AUTORENEWAL',columns:['Number']},
+          {paramName:'PAI NON-AUTORENEWAL',columns:['Number']}]},
+        {name:'UTKARSH', parameters:[{paramName:'ACCOUNTS',columns:['Number','Amount']}]}
+      ];
+      todayTotals = {};
+    }
+    document.getElementById('infoStrip').style.display = 'flex';
+    renderCamps();
+  } catch(e) {
+    toast('Could not load: '+e.message, 'error');
+    document.getElementById('campArea').innerHTML =
+      `<div class="empty"><div class="icon">⚠️</div><h3>Connection Error</h3><p>${e.message}</p></div>`;
+  }
+  showOverlay(false);
+}
+
+// ── RENDER CAMPAIGNS ──────────────────────────────────
+function renderCamps() {
+  const el = document.getElementById('campArea');
+  if (!activeCampaigns.length) {
+    document.getElementById('submitSection').style.display = 'none';
+    el.innerHTML = `<div class="empty"><div class="icon">📋</div><h3>No Active Campaigns</h3><p>No campaigns scheduled for today.<br>Check back later.</p></div>`;
+    return;
+  }
+  document.getElementById('submitSection').style.display = 'block';
+
+  el.innerHTML = activeCampaigns.map((c, ci) => {
+    const ct = todayTotals[c.name] || {};
+    const pgHtml = (c.parameters||[]).map((p, pi) => {
+      const colHtml = (p.columns||['Number']).map((col, ki) => {
+        const fid    = `f_${ci}_${pi}_${ki}`;
+        const prevVal = ct[p.paramName+'__'+col];
+        const isAmt  = col.toLowerCase().includes('amount')||col.toLowerCase().includes('amt');
+        const note   = (prevVal!==undefined && prevVal>0)
+          ? `<div class="prev-note">Today's total: <strong>${isAmt?'₹'+prevVal.toLocaleString('en-IN'):prevVal}</strong></div>` : '';
+        return `<div class="col-field">
+          <label for="${fid}">${col}</label>
+          <input type="number" id="${fid}" min="0" step="${isAmt?'0.01':'1'}" placeholder="0" inputmode="numeric">
+          ${note}
+        </div>`;
+      }).join('');
+      return `<div class="pg">
+        <div class="pg-name">${p.paramName}</div>
+        <div class="cols-grid">${colHtml}</div>
+      </div>`;
+    }).join('');
+
+    return `<div class="camp-block">
+      <div class="camp-header">
+        <span class="camp-dot"></span>
+        <span class="camp-name">${c.name}</span>
+        <span class="camp-badge">● LIVE</span>
+      </div>
+      ${pgHtml}
+    </div>`;
+  }).join('');
+}
+
+// ── SUBMIT ─────────────────────────────────────────────
+async function doSubmit() {
+  if (!selectedBranch) { toast('Select your branch first','warning'); return; }
+
+  const campData = {};
+  let hasZero = false;
+
+  activeCampaigns.forEach((c, ci) => {
+    campData[c.name] = {};
+    (c.parameters||[]).forEach((p, pi) => {
+      (p.columns||['Number']).forEach((col, ki) => {
+        const v = parseFloat(document.getElementById(`f_${ci}_${pi}_${ki}`)?.value) || 0;
+        if (v === 0) hasZero = true;
+        campData[c.name][p.paramName+'__'+col] = v;
+      });
+    });
+  });
+
+  if (hasZero && !confirm('⚠️ Some fields are ZERO.\n\nSubmit anyway?')) return;
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  showOverlay(true, 'Submitting report…');
+
+  try {
+    if (CFG_OK) {
+      const data = await apiCall({action:'submitReport'}, {branch:selectedBranch, date:DATE_KEY, campaigns:campData});
+      if (!data.success) throw new Error(data.error || 'Submission failed');
+      todayTotals = data.todayData || todayTotals;
+    } else {
+      await new Promise(r=>setTimeout(r,700));
+      activeCampaigns.forEach(c => {
+        if (!todayTotals[c.name]) todayTotals[c.name] = {};
+        (c.parameters||[]).forEach(p => (p.columns||[]).forEach(col => {
+          const k = p.paramName+'__'+col;
+          todayTotals[c.name][k] = (todayTotals[c.name][k]||0)+(campData[c.name][k]||0);
+        }));
+      });
+    }
+    // Clear inputs and re-render with updated totals
+    activeCampaigns.forEach((c,ci) =>
+      (c.parameters||[]).forEach((p,pi) =>
+        (p.columns||[]).forEach((_,ki) => {
+          const el = document.getElementById(`f_${ci}_${pi}_${ki}`);
+          if (el) el.value = '';
+        })
+      )
+    );
+    renderCamps();
+    toast('✅ Report submitted successfully!','success');
+    // Scroll to top of campaigns
+    document.getElementById('campArea').scrollIntoView({behavior:'smooth',block:'start'});
+  } catch(e) {
+    toast('Submit failed: '+e.message,'error');
+  }
+
+  showOverlay(false);
+  btn.disabled = false;
+}
+
+// ── API ─────────────────────────────────────────────────
+async function apiCall(params, payload) {
+  const qs = Object.entries(params).map(([k,v])=>encodeURIComponent(k)+'='+encodeURIComponent(String(v))).join('&');
+  let url = SCRIPT_URL+'?'+qs;
+  if (payload !== undefined) url += '&payload='+encodeURIComponent(JSON.stringify(payload));
+  let res;
+  try { res = await fetch(url, {redirect:'follow'}); }
+  catch(e) { throw new Error('Network error: '+e.message); }
+  const text = await res.text();
+  if (text.trim().startsWith('<')) throw new Error('Server returned HTML — check deployment settings');
+  let d;
+  try { d = JSON.parse(text); } catch(e) { throw new Error('Bad JSON: '+text.substring(0,80)); }
+  if (d && d.error) throw new Error(d.error);
+  return d;
+}
+
+// ── UI ──────────────────────────────────────────────────
+function showOverlay(v, msg) {
+  document.getElementById('overlay').classList.toggle('show', v);
+  if (msg) document.getElementById('overlayMsg').textContent = msg;
+}
+function toast(msg, type='success') {
+  const icons={success:'✅',warning:'⚠️',error:'❌'};
+  const t = document.getElementById('toast');
+  document.getElementById('tMsg').textContent  = msg;
+  document.getElementById('tIcon').textContent = icons[type]||'ℹ️';
+  t.className = 'toast '+type+' show';
+  setTimeout(()=>t.classList.remove('show'), 3800);
+}
+</script>
+</body>
+</html>
