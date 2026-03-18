@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Campaign Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0F2744;--navy2:#1A3A5C;--navy3:#2A5080;
+  --gold:#C8860A;--gold-l:#F5A623;
+  --teal:#0D7A6E;--teal-l:#1ABC9C;
+  --red:#C0392B;--red-l:#E74C3C;
+  --bg:#F0EDE8;--card:#FFFFFF;
+  --border:#DDD8CF;--text:#1A1A1A;--muted:#7A7469;
+  --sidebar-w:220px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+
+/* ── Auth Screen ─────────────────────────────────── */
+#authScreen{
+  display:flex;align-items:center;justify-content:center;
+  min-height:100vh;background:var(--navy);
+  flex-direction:column;gap:0;
+}
+.auth-box{
+  background:#fff;border-radius:24px;
+  padding:40px 36px;width:100%;max-width:380px;
+  margin:16px;
+  box-shadow:0 20px 60px rgba(0,0,0,.3);
+}
+.auth-logo{display:flex;align-items:center;gap:12px;margin-bottom:30px}
+.auth-logo .icon{width:44px;height:44px;background:linear-gradient(135deg,var(--gold-l),var(--gold));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.auth-logo .name{font-size:20px;font-weight:700;color:var(--navy)}
+.auth-logo .name span{color:var(--gold)}
+.auth-box h2{font-size:22px;font-weight:700;margin-bottom:6px}
+.auth-box p{font-size:13px;color:var(--muted);margin-bottom:24px}
+.auth-field label{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px}
+.auth-field input{
+  width:100%;padding:13px 16px;
+  border:2px solid var(--border);border-radius:12px;
+  font-family:'DM Sans',sans-serif;font-size:15px;
+  outline:none;transition:border-color .2s;
+}
+.auth-field input:focus{border-color:var(--navy2)}
+.auth-btn{
+  width:100%;padding:14px;margin-top:18px;
+  background:var(--navy2);color:#fff;border:none;
+  border-radius:12px;font-family:'DM Sans',sans-serif;
+  font-size:15px;font-weight:700;cursor:pointer;
+  transition:background .2s;
+}
+.auth-btn:hover{background:var(--navy3)}
+.auth-err{color:var(--red);font-size:13px;margin-top:10px;text-align:center;display:none}
+
+/* ── App Shell ──────────────────────────────────── */
+#appShell{display:none;min-height:100vh}
+
+/* Sidebar */
+.sidebar{
+  width:var(--sidebar-w);
+  background:var(--navy);
+  position:fixed;top:0;left:0;bottom:0;
+  display:flex;flex-direction:column;
+  z-index:100;
+  transition:transform .3s;
+}
+.sb-brand{
+  padding:22px 20px 18px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+.sb-brand-row{display:flex;align-items:center;gap:10px}
+.sb-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--gold-l),var(--gold));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.sb-name{font-size:15px;font-weight:700;color:#fff}
+.sb-name span{color:var(--gold-l)}
+.sb-sub{font-size:10px;color:rgba(255,255,255,.4);margin-top:4px;letter-spacing:.5px;text-transform:uppercase}
+.sb-nav{flex:1;padding:12px 10px;overflow-y:auto}
+.nav-item{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 12px;border-radius:10px;
+  color:rgba(255,255,255,.55);font-size:14px;font-weight:500;
+  cursor:pointer;transition:all .15s;margin-bottom:2px;
+}
+.nav-item .ni{font-size:18px;width:24px;text-align:center}
+.nav-item:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.85)}
+.nav-item.active{background:rgba(245,166,35,.15);color:var(--gold-l)}
+.sb-footer{
+  padding:16px 18px;
+  border-top:1px solid rgba(255,255,255,.08);
+  font-size:11px;color:rgba(255,255,255,.3);
+}
+/* Overlay for mobile sidebar */
+.sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99}
+
+/* Main */
+.main-area{
+  margin-left:var(--sidebar-w);
+  min-height:100vh;
+  display:flex;flex-direction:column;
+}
+.topbar{
+  background:var(--card);
+  border-bottom:1px solid var(--border);
+  padding:14px 24px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:50;
+}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.hamburger{display:none;background:none;border:none;font-size:22px;cursor:pointer;padding:4px}
+.page-title{font-size:18px;font-weight:700;letter-spacing:-.3px}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.tb-date{font-size:13px;color:var(--muted);background:var(--bg);padding:6px 14px;border-radius:20px}
+.tb-setup-btn{padding:7px 16px;background:var(--gold);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
+.content-area{padding:24px;flex:1}
+
+/* ── Shared UI ──────────────────────────────────── */
+.card{background:var(--card);border-radius:16px;padding:20px;box-shadow:0 2px 16px rgba(15,39,68,.07)}
+.card-title{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:16px}
+
+/* Stat cards */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-bottom:20px}
+.stat-card{
+  background:var(--card);border-radius:14px;
+  padding:18px;box-shadow:0 2px 12px rgba(15,39,68,.07);
+}
+.stat-val{font-size:30px;font-weight:700;font-family:'DM Mono',monospace;letter-spacing:-1px;color:var(--navy2)}
+.stat-lbl{font-size:12px;color:var(--muted);margin-top:4px;font-weight:500}
+.stat-icon{font-size:24px;margin-bottom:10px}
+
+/* Branch activity grid */
+.activity-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+  gap:10px;
+  margin-top:14px;
+}
+.branch-tile{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;background:var(--bg);
+  border-radius:10px;border:1px solid var(--border);
+  font-size:12px;font-weight:600;
+}
+.dot{
+  width:12px;height:12px;border-radius:50%;
+  flex-shrink:0;
+  box-shadow:0 0 0 3px rgba(0,0,0,.1);
+}
+.dot.green{background:#27AE60;box-shadow:0 0 0 3px rgba(39,174,96,.2)}
+.dot.red  {background:#E74C3C;box-shadow:0 0 0 3px rgba(231,76,60,.2)}
+.submits-count{margin-left:auto;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)}
+
+/* Campaigns table */
+.table-wrap{overflow-x:auto;margin-top:14px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{
+  padding:10px 14px;text-align:left;
+  font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;
+  color:var(--muted);border-bottom:2px solid var(--border);
+  background:var(--bg);
+  white-space:nowrap;
+}
+td{padding:12px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#FAFAF8}
+.badge{
+  display:inline-flex;align-items:center;
+  padding:3px 10px;border-radius:20px;
+  font-size:10px;font-weight:700;letter-spacing:.5px;
+  text-transform:uppercase;
+}
+.badge.active{background:#D5F5E3;color:#1E8449}
+.badge.inactive{background:#FDEBD0;color:#C0392B}
+.badge.completed{background:#E8EAF6;color:#3949AB}
+
+/* Button */
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 16px;border-radius:9px;
+  font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;
+  cursor:pointer;border:none;transition:all .15s;
+}
+.btn-primary{background:var(--navy2);color:#fff}
+.btn-primary:hover{background:var(--navy3)}
+.btn-danger{background:#FDEBD0;color:var(--red)}
+.btn-sm{padding:5px 12px;font-size:12px}
+.btn-gold{background:var(--gold);color:#fff}
+.btn-teal{background:var(--teal);color:#fff}
+
+/* FAB */
+.fab{
+  position:fixed;bottom:28px;right:24px;
+  width:56px;height:56px;
+  background:var(--navy2);color:#fff;
+  border:none;border-radius:50%;
+  font-size:26px;cursor:pointer;
+  box-shadow:0 8px 24px rgba(15,39,68,.35);
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .2s,background .2s;z-index:40;
+}
+.fab:hover{transform:scale(1.08);background:var(--navy3)}
+
+/* Modal */
+.modal-backdrop{
+  display:none;position:fixed;inset:0;
+  background:rgba(15,39,68,.55);backdrop-filter:blur(4px);
+  z-index:500;align-items:center;justify-content:center;overflow-y:auto;padding:20px;
+}
+.modal-backdrop.open{display:flex}
+.modal{
+  background:var(--card);border-radius:22px;
+  width:100%;max-width:560px;
+  max-height:90vh;overflow-y:auto;
+  animation:popIn .3s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes popIn{from{transform:scale(.88);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:22px 24px 16px;
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;background:var(--card);z-index:2;
+}
+.modal-head h2{font-size:18px;font-weight:700}
+.modal-close{background:var(--bg);border:none;width:32px;height:32px;border-radius:8px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.modal-body{padding:22px 24px}
+.modal-foot{
+  padding:16px 24px;
+  border-top:1px solid var(--border);
+  display:flex;gap:10px;justify-content:flex-end;
+  position:sticky;bottom:0;background:var(--card);
+}
+
+/* Form styles */
+.form-row{margin-bottom:16px}
+.form-row label{display:block;font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.form-row input,.form-row select{
+  width:100%;padding:11px 14px;
+  border:2px solid var(--border);border-radius:10px;
+  font-family:'DM Sans',sans-serif;font-size:14px;
+  outline:none;background:var(--card);
+  transition:border-color .2s;
+}
+.form-row input:focus,.form-row select:focus{border-color:var(--navy2)}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.param-add-row{
+  display:flex;gap:10px;align-items:center;
+  background:var(--bg);border-radius:10px;
+  padding:10px 12px;margin-bottom:8px;
+  border:1px solid var(--border);
+}
+.param-add-row input{flex:1;border:none;background:transparent;font-size:14px;outline:none;font-family:'DM Sans',sans-serif}
+.param-add-row select{border:1px solid var(--border);border-radius:7px;padding:6px 10px;background:var(--card);font-size:13px;font-family:'DM Sans',sans-serif}
+.param-remove{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;padding:0 4px;line-height:1}
+.param-remove:hover{color:var(--red)}
+.add-param-btn{
+  background:var(--bg);border:2px dashed var(--border);
+  width:100%;padding:10px;border-radius:10px;
+  font-family:'DM Sans',sans-serif;font-size:13px;
+  color:var(--muted);cursor:pointer;transition:all .15s;
+  font-weight:500;
+}
+.add-param-btn:hover{border-color:var(--navy2);color:var(--navy2)}
+.days-wrap{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.day-btn{
+  padding:6px 14px;border-radius:20px;
+  border:2px solid var(--border);background:var(--card);
+  font-size:12px;font-weight:600;cursor:pointer;
+  transition:all .15s;
+}
+.day-btn.sel{background:var(--navy2);color:#fff;border-color:var(--navy2)}
+
+/* Report table */
+.report-filters{
+  display:flex;flex-wrap:wrap;gap:12px;
+  align-items:flex-end;margin-bottom:18px;
+}
+.filter-group{display:flex;flex-direction:column;gap:4px;min-width:140px}
+.filter-group label{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted)}
+.filter-group select,.filter-group input{
+  padding:9px 12px;border:2px solid var(--border);border-radius:9px;
+  font-family:'DM Sans',sans-serif;font-size:13px;background:var(--card);outline:none;
+}
+.filter-group select:focus,.filter-group input:focus{border-color:var(--navy2)}
+.report-table-wrap{overflow-x:auto}
+.report-table{width:100%;border-collapse:collapse;font-size:13px}
+.report-table th{
+  padding:10px 14px;font-size:10px;font-weight:700;letter-spacing:.8px;
+  text-transform:uppercase;color:#fff;
+  background:var(--navy2);white-space:nowrap;
+}
+.report-table th:first-child{border-radius:8px 0 0 0}
+.report-table th:last-child{border-radius:0 8px 0 0}
+.report-table td{padding:11px 14px;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;font-size:12px}
+.report-table td:first-child{font-family:'DM Sans',sans-serif;font-weight:600;font-size:12px}
+.report-table tr:last-child td{border-bottom:none;font-weight:700;background:#FFF8E7}
+.report-table .total-row td{background:var(--bg);font-weight:700;font-family:'DM Mono',monospace}
+
+/* Branch management */
+.branch-manage-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.branch-tag{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--bg);border:1px solid var(--border);
+  padding:7px 12px;border-radius:9px;font-size:13px;font-weight:500;
+}
+.branch-tag .remove-btn{
+  background:none;border:none;color:var(--muted);cursor:pointer;
+  font-size:16px;line-height:1;padding:0;transition:color .1s;
+}
+.branch-tag .remove-btn:hover{color:var(--red)}
+
+/* Spinner & empty */
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--navy2);border-radius:50%;animation:spin .7s linear infinite;margin:40px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty-panel{text-align:center;padding:40px 20px;color:var(--muted)}
+.empty-panel .ei{font-size:40px;margin-bottom:10px}
+
+/* Toast */
+.toast{position:fixed;top:18px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--navy);color:#fff;padding:11px 22px;border-radius:50px;font-size:13px;font-weight:500;z-index:2000;transition:transform .3s cubic-bezier(.34,1.56,.64,1);box-shadow:0 8px 30px rgba(0,0,0,.25);white-space:nowrap;max-width:90vw}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.success{background:var(--teal)}
+.toast.error{background:var(--red)}
+.toast.warning{background:var(--gold)}
+
+/* Responsive */
+@media(max-width:768px){
+  .sidebar{transform:translateX(calc(-1 * var(--sidebar-w)))}
+  .sidebar.open{transform:translateX(0)}
+  .sb-overlay.open{display:block}
+  .main-area{margin-left:0}
+  .hamburger{display:block}
+  .content-area{padding:16px}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .two-col{grid-template-columns:1fr}
+  .report-filters{flex-direction:column}
+  .filter-group{min-width:100%}
+  .fab{bottom:18px;right:16px}
+}
+</style>
+</head>
+<body>
+
+<div id="toast" class="toast"></div>
+
+<!-- ── Auth Screen ──────────────────────────────── -->
+<div id="authScreen">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <div class="icon">🏦</div>
+      <div class="name">Campaign<span>Portal</span></div>
+    </div>
+    <h2>Admin Login</h2>
+    <p>Enter your administrator password to access the portal.</p>
+    <div class="auth-field">
+      <label>Password</label>
+      <input type="password" id="pwInput" placeholder="Enter password…" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="auth-btn" onclick="doLogin()">Sign In →</button>
+    <div class="auth-err" id="authErr">Incorrect password. Please try again.</div>
+  </div>
+</div>
+
+<!-- ── App Shell ─────────────────────────────────── -->
+<div id="appShell">
+
+  <!-- Sidebar Overlay (mobile) -->
+  <div class="sb-overlay" id="sbOverlay" onclick="closeSidebar()"></div>
+
+  <!-- Sidebar -->
+  <nav class="sidebar" id="sidebar">
+    <div class="sb-brand">
+      <div class="sb-brand-row">
+        <div class="sb-icon">🏦</div>
+        <div class="sb-name">Campaign<span>Portal</span></div>
+      </div>
+      <div class="sb-sub">Admin Dashboard</div>
+    </div>
+    <div class="sb-nav">
+      <div class="nav-item active" onclick="goTab('dashboard',this)">
+        <span class="ni">📊</span> Dashboard
+      </div>
+      <div class="nav-item" onclick="goTab('campaigns',this)">
+        <span class="ni">🎯</span> Campaigns
+      </div>
+      <div class="nav-item" onclick="goTab('reports',this)">
+        <span class="ni">📋</span> Reports
+      </div>
+      <div class="nav-item" onclick="goTab('branches',this)">
+        <span class="ni">🏦</span> Branches
+      </div>
+    </div>
+    <div class="sb-footer">v2.0 · Secured Admin Access</div>
+  </nav>
+
+  <!-- Main Area -->
+  <div class="main-area">
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger" onclick="openSidebar()">☰</button>
+        <div class="page-title" id="pageTitle">Dashboard</div>
+      </div>
+      <div class="topbar-right">
+        <div class="tb-date" id="tbDate"></div>
+        <button class="tb-setup-btn" onclick="runSetup()" title="Initialise Google Sheet">⚙ Setup Sheet</button>
+      </div>
+    </div>
+
+    <div class="content-area">
+
+      <!-- ── DASHBOARD ──────────────────────────── -->
+      <div id="tab-dashboard">
+        <div class="stats-grid" id="statsGrid">
+          <div class="stat-card"><div class="stat-icon">🎯</div><div class="stat-val" id="st-camps">—</div><div class="stat-lbl">Active Campaigns</div></div>
+          <div class="stat-card"><div class="stat-icon">🏦</div><div class="stat-val" id="st-branches">—</div><div class="stat-lbl">Total Branches</div></div>
+          <div class="stat-card"><div class="stat-icon">🟢</div><div class="stat-val" id="st-active">—</div><div class="stat-lbl">Live Today</div></div>
+          <div class="stat-card"><div class="stat-icon">🔴</div><div class="stat-val" id="st-inactive">—</div><div class="stat-lbl">Not Reported</div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Branch Activity — Today</div>
+          <div style="display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap">
+            <span style="display:flex;align-items:center;gap:6px;font-size:12px"><span class="dot green"></span> Visited Portal</span>
+            <span style="display:flex;align-items:center;gap:6px;font-size:12px"><span class="dot red"></span> Not Yet Visited</span>
+          </div>
+          <div class="activity-grid" id="activityGrid">
+            <div class="spinner"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CAMPAIGNS ──────────────────────────── -->
+      <div id="tab-campaigns" style="display:none">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
+          <button class="btn btn-primary" onclick="openCampModal()">＋ &nbsp;New Campaign</button>
+        </div>
+        <div class="card">
+          <div class="card-title">All Campaigns</div>
+          <div class="table-wrap" id="campTableWrap">
+            <div class="spinner"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── REPORTS ─────────────────────────────── -->
+      <div id="tab-reports" style="display:none">
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-title">Filter Report</div>
+          <div class="report-filters">
+            <div class="filter-group">
+              <label>Campaign</label>
+              <select id="rptCampaign">
+                <option value="">All Campaigns</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Branch</label>
+              <select id="rptBranch">
+                <option value="">All Branches</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>From Date</label>
+              <input type="date" id="rptFrom">
+            </div>
+            <div class="filter-group">
+              <label>To Date</label>
+              <input type="date" id="rptTo">
+            </div>
+            <button class="btn btn-primary" onclick="loadReport()" style="align-self:flex-end;padding:10px 20px">
+              ⟳ &nbsp;Generate
+            </button>
+            <button class="btn btn-teal btn-sm" onclick="exportCSV()" style="align-self:flex-end;padding:10px 16px">
+              ↓ CSV
+            </button>
+          </div>
+        </div>
+        <div id="reportOutput">
+          <div class="empty-panel"><div class="ei">📋</div><p>Select filters and click Generate to view report.</p></div>
+        </div>
+      </div>
+
+      <!-- ── BRANCHES ─────────────────────────────── -->
+      <div id="tab-branches" style="display:none">
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-title">Add New Branch</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <input type="text" id="newBranchInput" placeholder="Branch name…"
+              style="flex:1;min-width:200px;padding:11px 14px;border:2px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none"
+              onkeydown="if(event.key==='Enter')addBranch()">
+            <button class="btn btn-primary" onclick="addBranch()">＋ Add Branch</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Active Branches <span id="branchCount" style="font-size:11px;font-weight:500;color:var(--muted)"></span></div>
+          <div id="branchManageList" class="branch-manage-list">
+            <div class="spinner"></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content-area -->
+  </div><!-- /main-area -->
+</div><!-- /appShell -->
+
+<!-- ── Campaign Create Modal ──────────────────────── -->
+<div class="modal-backdrop" id="campModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>➕ &nbsp;New Campaign</h2>
+      <button class="modal-close" onclick="closeCampModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <label>Campaign Name *</label>
+        <input type="text" id="cName" placeholder="e.g. CYCLING WITH CMC">
+      </div>
+      <div class="two-col">
+        <div class="form-row">
+          <label>Start Date *</label>
+          <input type="date" id="cStart">
+        </div>
+        <div class="form-row">
+          <label>End Date *</label>
+          <input type="date" id="cEnd">
+        </div>
+      </div>
+      <div class="form-row">
+        <label>Frequency *</label>
+        <select id="cFreq" onchange="toggleDays()">
+          <option value="daily">Daily</option>
+          <option value="weekly">Specific Days of Week</option>
+        </select>
+      </div>
+      <div class="form-row" id="daysRow" style="display:none">
+        <label>Select Days</label>
+        <div class="days-wrap">
+          <button type="button" class="day-btn" data-day="Monday" onclick="toggleDay(this)">Mon</button>
+          <button type="button" class="day-btn" data-day="Tuesday" onclick="toggleDay(this)">Tue</button>
+          <button type="button" class="day-btn" data-day="Wednesday" onclick="toggleDay(this)">Wed</button>
+          <button type="button" class="day-btn" data-day="Thursday" onclick="toggleDay(this)">Thu</button>
+          <button type="button" class="day-btn" data-day="Friday" onclick="toggleDay(this)">Fri</button>
+          <button type="button" class="day-btn" data-day="Saturday" onclick="toggleDay(this)">Sat</button>
+          <button type="button" class="day-btn" data-day="Sunday" onclick="toggleDay(this)">Sun</button>
+        </div>
+      </div>
+      <div class="form-row">
+        <label>Parameters *</label>
+        <div id="paramsList"></div>
+        <button type="button" class="add-param-btn" onclick="addParam()">＋ Add Parameter</button>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeCampModal()" style="background:var(--bg)">Cancel</button>
+      <button class="btn btn-primary" onclick="createCampaign()">Create Campaign →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ──────────────────────────────────────────────────────────────
+// CONFIG
+// ──────────────────────────────────────────────────────────────
+const API     = 'YOUR_APPS_SCRIPT_URL_HERE';
+const ADMIN_PW = 'admin@2024';   // ← CHANGE THIS PASSWORD
+
+let allCampaigns = [], allBranches = [], lastReport = null;
+const today = fmtDate(new Date());
+
+// ─── Auth ─────────────────────────────────────────────────────
+function doLogin(){
+  const v = document.getElementById('pwInput').value;
+  if(v === ADMIN_PW){
+    document.getElementById('authScreen').style.display='none';
+    document.getElementById('appShell').style.display='block';
+    localStorage.setItem('cp_admin_auth','1');
+    initApp();
+  } else {
+    document.getElementById('authErr').style.display='block';
+    document.getElementById('pwInput').value='';
+  }
+}
+
+// Auto-login if remembered
+if(localStorage.getItem('cp_admin_auth')==='1'){
+  document.getElementById('authScreen').style.display='none';
+  document.getElementById('appShell').style.display='block';
+  window.addEventListener('DOMContentLoaded', initApp);
+}
+document.getElementById('pwInput').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+
+// ─── Init ──────────────────────────────────────────────────────
+async function initApp(){
+  const now = new Date();
+  const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('tbDate').textContent =
+    `${days[now.getDay()].slice(0,3)} ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+
+  // Set default report dates
+  const d30 = new Date(); d30.setDate(d30.getDate()-30);
+  document.getElementById('rptFrom').value = fmtDate(d30);
+  document.getElementById('rptTo').value = today;
+
+  await Promise.all([loadDashboard(), loadAllCampaigns(), loadBranchesData()]);
+}
+
+// ─── Tabs ──────────────────────────────────────────────────────
+function goTab(tab, el){
+  ['dashboard','campaigns','reports','branches'].forEach(t => {
+    document.getElementById(`tab-${t}`).style.display = t===tab?'block':'none';
+  });
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  el.classList.add('active');
+  const titles={dashboard:'Dashboard',campaigns:'Campaigns',reports:'Reports',branches:'Branches'};
+  document.getElementById('pageTitle').textContent = titles[tab];
+  closeSidebar();
+}
+
+// Sidebar
+function openSidebar(){ document.getElementById('sidebar').classList.add('open'); document.getElementById('sbOverlay').classList.add('open'); }
+function closeSidebar(){ document.getElementById('sidebar').classList.remove('open'); document.getElementById('sbOverlay').classList.remove('open'); }
+
+// ─── Dashboard ─────────────────────────────────────────────────
+async function loadDashboard(){
+  try{
+    const [actResp, campsResp, branchResp] = await Promise.all([
+      apiFetch(`${API}?action=getBranchActivity&date=${today}`),
+      apiFetch(`${API}?action=getCampaigns&date=${today}`),
+      apiFetch(`${API}?action=getBranches`)
+    ]);
+
+    const activity = actResp.data || {};
+    const camps    = campsResp.data || [];
+    const branches = branchResp.data || [];
+
+    const liveCount = Object.values(activity).filter(a=>a.visited).length;
+    const deadCount = branches.length - liveCount;
+
+    document.getElementById('st-camps').textContent = camps.length;
+    document.getElementById('st-branches').textContent = branches.length;
+    document.getElementById('st-active').textContent = liveCount;
+    document.getElementById('st-inactive').textContent = deadCount;
+
+    // Activity grid
+    const grid = document.getElementById('activityGrid');
+    grid.innerHTML = branches.sort().map(b => {
+      const a = activity[b] || { visited:false, submitCount:0 };
+      const time = a.lastVisit ? new Date(a.lastVisit).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}) : '';
+      return `
+        <div class="branch-tile">
+          <div class="dot ${a.visited?'green':'red'}"></div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:11px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b}</div>
+            ${a.visited?`<div style="font-size:10px;color:var(--muted)">${time}</div>`:''}
+          </div>
+          ${a.submitCount>0?`<div class="submits-count">${a.submitCount}✓</div>`:''}
+        </div>`;
+    }).join('');
+
+  }catch(e){ toast('Dashboard load failed','error'); }
+}
+
+// ─── Campaigns ─────────────────────────────────────────────────
+async function loadAllCampaigns(){
+  try{
+    const r = await apiFetch(`${API}?action=getAllCampaigns`);
+    allCampaigns = r.data || [];
+    renderCampaignsTable();
+    populateReportCampaigns();
+  }catch(e){ toast('Could not load campaigns','error'); }
+}
+
+function renderCampaignsTable(){
+  const wrap = document.getElementById('campTableWrap');
+  if(!allCampaigns.length){
+    wrap.innerHTML='<div class="empty-panel"><div class="ei">🎯</div><p>No campaigns yet. Click "+ New Campaign" to create one.</p></div>';
+    return;
+  }
+  wrap.innerHTML = `
+    <table>
+      <thead><tr>
+        <th>Campaign</th><th>Start</th><th>End</th>
+        <th>Frequency</th><th>Parameters</th><th>Status</th><th>Action</th>
+      </tr></thead>
+      <tbody>
+        ${allCampaigns.map(c=>`
+          <tr>
+            <td><strong>${c.Name}</strong></td>
+            <td>${c.StartDate}</td><td>${c.EndDate}</td>
+            <td>${c.Frequency==='weekly'?'Weekly ('+c.Days+')':'Daily'}</td>
+            <td>${(c.parameters||[]).map(p=>`<span style="background:var(--bg);padding:2px 8px;border-radius:6px;font-size:11px;margin:2px;display:inline-block">${p.name}</span>`).join('')}</td>
+            <td><span class="badge ${c.Status}">${c.Status}</span></td>
+            <td>
+              ${c.Status==='active'
+                ?`<button class="btn btn-danger btn-sm" onclick="toggleCamp('${c.ID}','inactive')">Deactivate</button>`
+                :c.Status==='inactive'?`<button class="btn btn-teal btn-sm" onclick="toggleCamp('${c.ID}','active')">Activate</button>`:''}
+            </td>
+          </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+async function toggleCamp(id, status){
+  try{
+    await apiPost({action:'updateCampaignStatus', id, status});
+    toast(`Campaign ${status}`,'success');
+    await loadAllCampaigns();
+  }catch(e){ toast('Failed to update','error'); }
+}
+
+// Campaign Modal
+let paramCount = 0;
+function openCampModal(){
+  paramCount = 0;
+  document.getElementById('cName').value='';
+  document.getElementById('cStart').value=today;
+  document.getElementById('cEnd').value='';
+  document.getElementById('cFreq').value='daily';
+  document.getElementById('daysRow').style.display='none';
+  document.querySelectorAll('.day-btn').forEach(b=>b.classList.remove('sel'));
+  document.getElementById('paramsList').innerHTML='';
+  addParam(); // start with one
+  document.getElementById('campModal').classList.add('open');
+}
+function closeCampModal(){ document.getElementById('campModal').classList.remove('open'); }
+
+function toggleDays(){
+  document.getElementById('daysRow').style.display =
+    document.getElementById('cFreq').value==='weekly' ? 'block' : 'none';
+}
+function toggleDay(btn){ btn.classList.toggle('sel'); }
+
+function addParam(){
+  paramCount++;
+  const id = `p_${paramCount}`;
+  const div = document.createElement('div');
+  div.className = 'param-add-row';
+  div.id = id;
+  div.innerHTML = `
+    <input type="text" placeholder="Parameter name (e.g. Number, Amount)" data-role="pname">
+    <select data-role="ptype">
+      <option value="number">Number</option>
+      <option value="amount">Amount</option>
+    </select>
+    <button class="param-remove" onclick="document.getElementById('${id}').remove()">✕</button>`;
+  document.getElementById('paramsList').appendChild(div);
+}
+
+async function createCampaign(){
+  const name  = document.getElementById('cName').value.trim();
+  const start = document.getElementById('cStart').value;
+  const end   = document.getElementById('cEnd').value;
+  const freq  = document.getElementById('cFreq').value;
+  const days  = [...document.querySelectorAll('.day-btn.sel')].map(b=>b.dataset.day).join(',');
+
+  if(!name||!start||!end){ toast('Please fill in Name, Start and End Date','warning'); return; }
+  if(freq==='weekly'&&!days){ toast('Select at least one day','warning'); return; }
+
+  const params = [...document.querySelectorAll('.param-add-row')].map(row=>({
+    name: row.querySelector('[data-role="pname"]').value.trim(),
+    type: row.querySelector('[data-role="ptype"]').value
+  })).filter(p=>p.name);
+
+  if(!params.length){ toast('Add at least one parameter','warning'); return; }
+
+  try{
+    await apiPost({action:'createCampaign', name, startDate:start, endDate:end, frequency:freq, days, parameters:params});
+    toast('Campaign created!','success');
+    closeCampModal();
+    await loadAllCampaigns();
+  }catch(e){ toast('Failed: '+e.message,'error'); }
+}
+
+// ─── Reports ───────────────────────────────────────────────────
+function populateReportCampaigns(){
+  const sel = document.getElementById('rptCampaign');
+  sel.innerHTML = '<option value="">All Campaigns</option>' +
+    allCampaigns.map(c=>`<option value="${c.ID}">${c.Name}</option>`).join('');
+}
+
+async function loadBranchesData(){
+  try{
+    const r = await apiFetch(`${API}?action=getBranches`);
+    allBranches = r.data || [];
+    renderBranchManage();
+    populateReportBranches();
+    document.getElementById('branchCount').textContent = `(${allBranches.length} branches)`;
+  }catch(e){}
+}
+
+function populateReportBranches(){
+  const sel = document.getElementById('rptBranch');
+  sel.innerHTML = '<option value="">All Branches</option>' +
+    allBranches.map(b=>`<option value="${b}">${b}</option>`).join('');
+}
+
+async function loadReport(){
+  const campaignId = document.getElementById('rptCampaign').value;
+  const branch     = document.getElementById('rptBranch').value;
+  const fromDate   = document.getElementById('rptFrom').value;
+  const toDate     = document.getElementById('rptTo').value;
+
+  const output = document.getElementById('reportOutput');
+  output.innerHTML = '<div class="spinner"></div>';
+
+  try{
+    const url = `${API}?action=getReport&campaignId=${campaignId}&branch=${encodeURIComponent(branch)}&fromDate=${fromDate}&toDate=${toDate}`;
+    const r = await apiFetch(url);
+    const data = r.data || [];
+    lastReport = data;
+    renderReport(data);
+  }catch(e){
+    output.innerHTML='<div class="empty-panel"><div class="ei">⚠️</div><p>Failed to load report: '+e.message+'</p></div>';
+  }
+}
+
+function renderReport(data){
+  const output = document.getElementById('reportOutput');
+  if(!data.length){ output.innerHTML='<div class="empty-panel"><div class="ei">📋</div><p>No data found for selected filters.</p></div>'; return; }
+
+  output.innerHTML = data.map(camp => {
+    if(!camp.data || !camp.data.length) return `
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-title">${camp.campaign}</div>
+        <div class="empty-panel"><div class="ei">📊</div><p>No submissions for this campaign in the selected period.</p></div>
+      </div>`;
+
+    const params = camp.parameters || [];
+    const totals = {};
+    params.forEach(p => { totals[p.name] = camp.data.reduce((s,r)=>s+(parseFloat(r[p.name])||0),0); });
+
+    return `
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-title">📋 ${camp.campaign}</div>
+        <div class="report-table-wrap">
+          <table class="report-table">
+            <thead><tr>
+              <th>Branch</th>
+              ${params.map(p=>`<th>${p.name}</th>`).join('')}
+            </tr></thead>
+            <tbody>
+              ${camp.data.map(row=>`
+                <tr>
+                  <td>${row.branch}</td>
+                  ${params.map(p=>`<td>${fmt(row[p.name]||0)}</td>`).join('')}
+                </tr>`).join('')}
+              <tr class="total-row">
+                <td>🔢 TOTAL</td>
+                ${params.map(p=>`<td>${fmt(totals[p.name])}</td>`).join('')}
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function exportCSV(){
+  if(!lastReport || !lastReport.length){ toast('Generate a report first','warning'); return; }
+  let csv = '';
+  lastReport.forEach(camp => {
+    csv += `Campaign: ${camp.campaign}\n`;
+    if(!camp.data || !camp.data.length){ csv += 'No data\n\n'; return; }
+    const params = camp.parameters || [];
+    csv += `Branch,${params.map(p=>p.name).join(',')}\n`;
+    camp.data.forEach(row => {
+      csv += `"${row.branch}",${params.map(p=>row[p.name]||0).join(',')}\n`;
+    });
+    csv += '\n';
+  });
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = `report_${today}.csv`;
+  a.click();
+}
+
+// ─── Branches ──────────────────────────────────────────────────
+function renderBranchManage(){
+  const el = document.getElementById('branchManageList');
+  if(!allBranches.length){ el.innerHTML='<p style="color:var(--muted);font-size:13px">No branches found.</p>'; return; }
+  el.innerHTML = allBranches.map(b => `
+    <div class="branch-tag" id="bt_${b.replace(/\s/g,'_')}">
+      ${b}
+      <button class="remove-btn" onclick="removeBranch('${b}')" title="Remove">✕</button>
+    </div>`).join('');
+}
+
+async function addBranch(){
+  const name = document.getElementById('newBranchInput').value.trim().toUpperCase();
+  if(!name){ toast('Enter a branch name','warning'); return; }
+  try{
+    await apiPost({action:'addBranch', branch:name});
+    document.getElementById('newBranchInput').value='';
+    toast(`Branch "${name}" added`,'success');
+    await loadBranchesData();
+  }catch(e){ toast('Failed to add branch','error'); }
+}
+
+async function removeBranch(name){
+  if(!confirm(`Remove branch "${name}"? They will no longer appear in the branch list.`)) return;
+  try{
+    await apiPost({action:'removeBranch', branch:name});
+    toast(`Branch "${name}" removed`,'success');
+    await loadBranchesData();
+  }catch(e){ toast('Failed','error'); }
+}
+
+// ─── Setup ────────────────────────────────────────────────────
+async function runSetup(){
+  if(!confirm('Initialize the Google Sheet with required tabs and branch data?')) return;
+  try{
+    const r = await apiFetch(`${API}?action=setup`);
+    toast('Sheet setup complete! ✓','success');
+    await initApp();
+  }catch(e){ toast('Setup failed: '+e.message,'error'); }
+}
+
+// ─── API Helpers ──────────────────────────────────────────────
+async function apiFetch(url){
+  const r = await fetch(url);
+  const j = await r.json();
+  if(!j.success) throw new Error(j.error || 'API error');
+  return j;
+}
+async function apiPost(body){
+  const r = await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body)});
+  const j = await r.json();
+  if(!j.success) throw new Error(j.error || 'API error');
+  return j;
+}
+
+// ─── Utilities ────────────────────────────────────────────────
+function fmtDate(d){
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function fmt(n){
+  const v = parseFloat(n||0);
+  return v%1===0 ? v.toLocaleString('en-IN') : v.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function toast(msg, type=''){
+  const el = document.getElementById('toast');
+  el.textContent=msg; el.className=`toast ${type} show`;
+  clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'),3200);
+}
+</script>
+</body>
+</html>

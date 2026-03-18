@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Campaign Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:   #0F2744;
+  --navy2:  #1A3A5C;
+  --gold:   #C8860A;
+  --gold-l: #F5A623;
+  --teal:   #0D7A6E;
+  --red:    #C0392B;
+  --bg:     #F4F1EC;
+  --card:   #FFFFFF;
+  --border: #DDD8CF;
+  --text:   #1A1A1A;
+  --muted:  #7A7469;
+  --radius: 18px;
+  --sh:     0 4px 24px rgba(15,39,68,.09);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  padding-bottom:110px;
+}
+
+/* ── Header ────────────────────────────────────── */
+.header{
+  background:var(--navy);
+  padding:0 18px;
+  position:relative;
+  overflow:hidden;
+}
+.header::after{
+  content:'';
+  position:absolute;
+  right:-60px;top:-60px;
+  width:220px;height:220px;
+  background:radial-gradient(circle,rgba(200,134,10,.25) 0%,transparent 70%);
+  pointer-events:none;
+}
+.header-inner{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:20px 0 16px;
+}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-icon{
+  width:38px;height:38px;
+  background:linear-gradient(135deg,var(--gold-l),var(--gold));
+  border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;
+}
+.brand-text{font-size:18px;font-weight:700;color:#fff;letter-spacing:-.3px}
+.brand-text span{color:var(--gold-l)}
+.date-chip{
+  background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.15);
+  color:rgba(255,255,255,.9);
+  padding:6px 14px;
+  border-radius:50px;
+  font-size:12px;
+  font-weight:500;
+  letter-spacing:.2px;
+}
+.header-sub{
+  padding:0 0 22px;
+  font-size:12px;
+  color:rgba(255,255,255,.5);
+  letter-spacing:.5px;
+  text-transform:uppercase;
+}
+
+/* ── Branch Card (overlap) ──────────────────────── */
+.content{padding:0 16px}
+.branch-card{
+  background:var(--card);
+  border-radius:var(--radius);
+  padding:18px;
+  margin-top:-20px;
+  box-shadow:var(--sh);
+  position:relative;
+  z-index:10;
+  margin-bottom:12px;
+}
+.field-label{
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:1.2px;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin-bottom:8px;
+}
+/* Searchable dropdown */
+.sel-wrap{position:relative}
+.sel-btn{
+  width:100%;
+  padding:13px 44px 13px 16px;
+  border:2px solid var(--border);
+  border-radius:12px;
+  font-size:15px;
+  font-weight:600;
+  font-family:'DM Sans',sans-serif;
+  color:var(--text);
+  background:var(--bg);
+  cursor:pointer;
+  text-align:left;
+  outline:none;
+  transition:border-color .2s;
+  position:relative;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.sel-btn:focus,.sel-btn.open{border-color:var(--navy2)}
+.sel-btn::after{
+  content:'▾';
+  position:absolute;
+  right:16px;top:50%;
+  transform:translateY(-50%);
+  color:var(--muted);
+  transition:transform .2s;
+}
+.sel-btn.open::after{transform:translateY(-50%) rotate(180deg)}
+.dropdown{
+  position:absolute;
+  top:calc(100% + 6px);
+  left:0;right:0;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  box-shadow:0 12px 40px rgba(0,0,0,.18);
+  z-index:200;
+  display:none;
+  overflow:hidden;
+}
+.dropdown.open{display:block}
+.dd-search{
+  padding:10px;
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;
+  background:var(--card);
+}
+.dd-search input{
+  width:100%;
+  padding:9px 14px;
+  border:1px solid var(--border);
+  border-radius:9px;
+  font-size:14px;
+  font-family:'DM Sans',sans-serif;
+  outline:none;
+  background:var(--bg);
+}
+.dd-list{max-height:240px;overflow-y:auto}
+.dd-opt{
+  padding:12px 16px;
+  font-size:14px;
+  cursor:pointer;
+  transition:background .1s;
+  font-weight:500;
+}
+.dd-opt:hover,.dd-opt.hl{background:#EAF0FB;color:var(--navy2)}
+.dd-empty{padding:20px;text-align:center;color:var(--muted);font-size:13px}
+
+/* ── Date Strip ─────────────────────────────────── */
+.date-strip{
+  display:none;
+  align-items:center;
+  gap:12px;
+  background:var(--card);
+  border-radius:14px;
+  padding:13px 16px;
+  box-shadow:var(--sh);
+  margin-bottom:4px;
+}
+.date-strip .icon{font-size:22px}
+.date-info .big{font-size:15px;font-weight:700}
+.date-info .sm{font-size:12px;color:var(--muted)}
+
+/* ── Section heading ────────────────────────────── */
+.section-hd{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin:18px 0 10px;
+}
+.section-hd span{
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:1.3px;
+  text-transform:uppercase;
+  color:var(--muted);
+}
+.section-hd::before,.section-hd::after{
+  content:'';flex:1;
+  height:1px;background:var(--border);
+}
+
+/* ── Campaign Card ──────────────────────────────── */
+.camp-card{
+  background:var(--card);
+  border-radius:var(--radius);
+  margin-bottom:14px;
+  box-shadow:var(--sh);
+  overflow:hidden;
+  animation:slideUp .3s ease forwards;
+  opacity:0;
+}
+@keyframes slideUp{
+  from{opacity:0;transform:translateY(16px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.camp-card:nth-child(1){animation-delay:.05s}
+.camp-card:nth-child(2){animation-delay:.1s}
+.camp-card:nth-child(3){animation-delay:.15s}
+
+.camp-head{
+  background:var(--navy2);
+  padding:14px 18px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.camp-title{
+  font-size:15px;
+  font-weight:700;
+  color:#fff;
+  letter-spacing:-.2px;
+}
+.live-badge{
+  background:rgba(200,134,10,.2);
+  border:1px solid rgba(245,166,35,.4);
+  color:var(--gold-l);
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:.8px;
+  text-transform:uppercase;
+  padding:3px 10px;
+  border-radius:20px;
+}
+.done-badge{
+  background:rgba(13,122,110,.2);
+  border:1px solid rgba(13,122,110,.4);
+  color:#1ABC9C;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:.8px;
+  text-transform:uppercase;
+  padding:3px 10px;
+  border-radius:20px;
+}
+.camp-body{padding:16px 18px}
+
+/* Parameter row */
+.param-block{margin-bottom:16px}
+.param-block:last-child{margin-bottom:0}
+.param-name{
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:.6px;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin-bottom:8px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.prev-chip{
+  background:#FEF3C7;
+  color:#92400E;
+  padding:2px 9px;
+  border-radius:20px;
+  font-size:10px;
+  font-weight:600;
+  letter-spacing:.3px;
+}
+.input-row{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.prev-box{
+  background:#F4F1EC;
+  border:2px dashed var(--border);
+  border-radius:10px;
+  padding:11px 14px;
+  font-family:'DM Mono',monospace;
+  font-size:17px;
+  font-weight:500;
+  color:var(--muted);
+  min-width:90px;
+  text-align:center;
+  flex-shrink:0;
+}
+.plus-sep{color:var(--muted);font-size:20px;font-weight:300;flex-shrink:0}
+.param-input{
+  flex:1;
+  padding:12px 14px;
+  border:2px solid var(--border);
+  border-radius:10px;
+  font-family:'DM Mono',monospace;
+  font-size:20px;
+  font-weight:500;
+  text-align:right;
+  outline:none;
+  transition:border-color .2s,box-shadow .2s;
+  background:var(--card);
+}
+.param-input:focus{
+  border-color:var(--navy2);
+  box-shadow:0 0 0 3px rgba(26,58,92,.1);
+}
+
+/* ── Loading / Empty ────────────────────────────── */
+.spinner{
+  width:36px;height:36px;
+  border:3px solid var(--border);
+  border-top-color:var(--navy2);
+  border-radius:50%;
+  animation:spin .7s linear infinite;
+  margin:44px auto;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{
+  text-align:center;
+  padding:44px 20px;
+  color:var(--muted);
+}
+.empty .ei{font-size:48px;margin-bottom:12px}
+.empty h3{font-size:17px;font-weight:700;color:var(--text)}
+.empty p{font-size:13px;margin-top:6px}
+
+/* ── Submit Bar ─────────────────────────────────── */
+.submit-bar{
+  position:fixed;
+  bottom:0;left:0;right:0;
+  background:rgba(244,241,236,.95);
+  backdrop-filter:blur(12px);
+  padding:14px 16px;
+  box-shadow:0 -2px 20px rgba(0,0,0,.1);
+  z-index:50;
+  display:none;
+}
+.submit-btn{
+  width:100%;
+  padding:16px;
+  background:var(--navy2);
+  color:#fff;
+  border:none;
+  border-radius:14px;
+  font-family:'DM Sans',sans-serif;
+  font-size:16px;
+  font-weight:700;
+  letter-spacing:.3px;
+  cursor:pointer;
+  transition:all .2s;
+  position:relative;
+  overflow:hidden;
+}
+.submit-btn::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.1),transparent);
+}
+.submit-btn:active{transform:scale(.98)}
+.submit-btn:disabled{opacity:.6;cursor:not-allowed}
+.submit-btn.success{background:var(--teal)}
+
+/* ── Toast ──────────────────────────────────────── */
+.toast{
+  position:fixed;
+  top:16px;left:50%;
+  transform:translateX(-50%) translateY(-80px);
+  background:var(--navy);
+  color:#fff;
+  padding:12px 22px;
+  border-radius:50px;
+  font-size:14px;
+  font-weight:500;
+  z-index:1000;
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1);
+  white-space:nowrap;
+  max-width:90vw;
+  box-shadow:0 8px 30px rgba(0,0,0,.25);
+}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.success{background:var(--teal)}
+.toast.warning{background:#C8860A}
+.toast.error{background:var(--red)}
+
+/* ── Zero warning modal ─────────────────────────── */
+.overlay{
+  display:none;
+  position:fixed;inset:0;
+  background:rgba(15,39,68,.6);
+  backdrop-filter:blur(4px);
+  z-index:300;
+  align-items:center;justify-content:center;
+}
+.overlay.show{display:flex}
+.modal{
+  background:var(--card);
+  border-radius:24px;
+  padding:28px 24px;
+  margin:20px;
+  max-width:360px;
+  width:100%;
+  animation:popIn .3s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes popIn{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-icon{font-size:44px;text-align:center;margin-bottom:12px}
+.modal h3{font-size:18px;font-weight:700;text-align:center;margin-bottom:8px}
+.modal p{font-size:14px;color:var(--muted);text-align:center;line-height:1.5}
+.modal-btns{display:flex;gap:10px;margin-top:22px}
+.modal-btns button{
+  flex:1;padding:13px;border-radius:12px;
+  font-family:'DM Sans',sans-serif;
+  font-size:15px;font-weight:600;
+  cursor:pointer;border:none;transition:all .15s;
+}
+.btn-cancel{background:var(--bg);color:var(--text)}
+.btn-confirm{background:var(--navy2);color:#fff}
+</style>
+</head>
+<body>
+
+<div id="toast" class="toast"></div>
+
+<!-- Zero Warning Modal -->
+<div class="overlay" id="zeroModal">
+  <div class="modal">
+    <div class="modal-icon">⚠️</div>
+    <h3>Zero Report</h3>
+    <p>You are submitting a <strong>Zero report</strong>. All values are 0. Do you want to continue?</p>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-confirm" onclick="proceedSubmit()">Submit Anyway</button>
+    </div>
+  </div>
+</div>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-inner">
+    <div class="brand">
+      <div class="brand-icon">🏦</div>
+      <div class="brand-text">Campaign<span>Portal</span></div>
+    </div>
+    <div class="date-chip" id="dateChip">Loading…</div>
+  </div>
+  <div class="header-sub">Daily Branch Reporting System</div>
+</div>
+
+<!-- Main Content -->
+<div class="content">
+
+  <!-- Branch Selector -->
+  <div class="branch-card">
+    <div class="field-label">📍 Select Your Branch</div>
+    <div class="sel-wrap" id="selWrap">
+      <button class="sel-btn" id="selBtn" onclick="toggleDD()">Select branch…</button>
+      <div class="dropdown" id="dropdown">
+        <div class="dd-search">
+          <input type="text" id="ddSearch" placeholder="🔍 Search branch name…" oninput="filterBranches(this.value)">
+        </div>
+        <div class="dd-list" id="ddList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Date Strip -->
+  <div class="date-strip" id="dateStrip">
+    <div class="icon">📅</div>
+    <div class="date-info">
+      <div class="big" id="dateStripBig"></div>
+      <div class="sm">Today's Report Date</div>
+    </div>
+  </div>
+
+  <!-- Campaigns -->
+  <div id="campaignsWrap" style="display:none">
+    <div class="section-hd"><span>Active Campaigns</span></div>
+    <div id="campaignsList"></div>
+  </div>
+
+  <!-- States -->
+  <div id="spinnerEl"><div class="spinner" style="display:none" id="spinner"></div></div>
+  <div class="empty" id="emptyBranch">
+    <div class="ei">🏦</div>
+    <h3>Select Your Branch</h3>
+    <p>Choose your branch above to view active campaigns and submit your daily report.</p>
+  </div>
+
+</div>
+
+<!-- Submit Bar -->
+<div class="submit-bar" id="submitBar">
+  <button class="submit-btn" id="submitBtn" onclick="handleSubmit()">✓ &nbsp;Submit Today's Report</button>
+</div>
+
+<script>
+// ──────────────────────────────────────────────────────────────
+// CONFIG — paste your deployed Apps Script URL here
+// ──────────────────────────────────────────────────────────────
+const API = 'YOUR_APPS_SCRIPT_URL_HERE';
+
+let allBranches = [], campaigns = [], todaySubs = {}, selectedBranch = '';
+const today = fmtDate(new Date());
+
+// ─── Init ────────────────────────────────────────────────────
+(async function init(){
+  const now = new Date();
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const dateStr = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+  document.getElementById('dateChip').textContent = `${days[now.getDay()].slice(0,3)} ${now.getDate()} ${months[now.getMonth()].slice(0,3)}`;
+  document.getElementById('dateStripBig').textContent = dateStr;
+
+  await loadBranches();
+
+  const saved = localStorage.getItem('cp_branch');
+  if (saved && allBranches.includes(saved)) selectBranch(saved, false);
+})();
+
+// ─── Branches ────────────────────────────────────────────────
+async function loadBranches(){
+  try{
+    const r = await apiFetch(`${API}?action=getBranches`);
+    allBranches = r.data || [];
+    renderDDList(allBranches);
+  }catch(e){ toast('Could not load branches — check API URL','error'); }
+}
+
+function renderDDList(list){
+  const el = document.getElementById('ddList');
+  if(!list.length){ el.innerHTML='<div class="dd-empty">No branches found</div>'; return; }
+  el.innerHTML = list.map(b =>
+    `<div class="dd-opt" onclick="selectBranch('${b}')">${b}</div>`
+  ).join('');
+}
+
+function filterBranches(q){
+  renderDDList(allBranches.filter(b => b.toLowerCase().includes(q.toLowerCase())));
+}
+
+function toggleDD(){
+  const btn = document.getElementById('selBtn');
+  const dd  = document.getElementById('dropdown');
+  const open = dd.classList.contains('open');
+  dd.classList.toggle('open', !open);
+  btn.classList.toggle('open', !open);
+  if(!open) setTimeout(()=>document.getElementById('ddSearch').focus(),50);
+}
+
+document.addEventListener('click', e => {
+  if(!e.target.closest('#selWrap')){
+    document.getElementById('dropdown').classList.remove('open');
+    document.getElementById('selBtn').classList.remove('open');
+  }
+});
+
+async function selectBranch(branch, save=true){
+  selectedBranch = branch;
+  if(save) localStorage.setItem('cp_branch', branch);
+  document.getElementById('selBtn').textContent = branch;
+  document.getElementById('dropdown').classList.remove('open');
+  document.getElementById('selBtn').classList.remove('open');
+  document.getElementById('ddSearch').value = '';
+  renderDDList(allBranches);
+
+  document.getElementById('emptyBranch').style.display='none';
+  document.getElementById('dateStrip').style.display='flex';
+  document.getElementById('campaignsWrap').style.display='none';
+  document.getElementById('spinner').style.display='block';
+  document.getElementById('submitBar').style.display='none';
+
+  logVisit(branch);
+  await loadCampaigns();
+}
+
+// ─── Campaigns ───────────────────────────────────────────────
+async function loadCampaigns(){
+  try{
+    const [cr, sr] = await Promise.all([
+      apiFetch(`${API}?action=getCampaigns&date=${today}`),
+      apiFetch(`${API}?action=getTodaySubmissions&branch=${encodeURIComponent(selectedBranch)}&date=${today}`)
+    ]);
+    campaigns = cr.data || [];
+    todaySubs = sr.data || {};
+    document.getElementById('spinner').style.display='none';
+    renderCampaigns();
+  }catch(e){
+    document.getElementById('spinner').style.display='none';
+    toast('Failed to load campaigns','error');
+  }
+}
+
+function renderCampaigns(){
+  const list = document.getElementById('campaignsList');
+  document.getElementById('campaignsWrap').style.display='block';
+
+  if(!campaigns.length){
+    list.innerHTML = `<div class="empty"><div class="ei">🎯</div><h3>No Active Campaigns</h3><p>There are no campaigns running today.</p></div>`;
+    document.getElementById('submitBar').style.display='none';
+    return;
+  }
+
+  list.innerHTML = campaigns.map(c => {
+    const subs = todaySubs[c.ID] || { submissions:[], totals:{} };
+    const hasData = subs.submissions && subs.submissions.length > 0;
+    const params = (c.parameters || []).map(p => {
+      const prev = subs.totals[p.name] || 0;
+      const hasPrev = prev > 0;
+      return `
+        <div class="param-block">
+          <div class="param-name">
+            ${p.name}
+            ${hasPrev ? `<span class="prev-chip">Today: ${fmt(prev)}</span>` : ''}
+          </div>
+          <div class="input-row">
+            ${hasPrev ? `<div class="prev-box">${fmt(prev)}</div><span class="plus-sep">+</span>` : ''}
+            <input type="number" inputmode="decimal" min="0" class="param-input"
+              data-cid="${c.ID}" data-param="${p.name}" placeholder="0">
+          </div>
+        </div>`;
+    }).join('');
+
+    return `
+      <div class="camp-card">
+        <div class="camp-head">
+          <div class="camp-title">📋 ${c.Name}</div>
+          ${hasData ? '<div class="done-badge">✓ Submitted</div>' : '<div class="live-badge">● Live</div>'}
+        </div>
+        <div class="camp-body">${params}</div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('submitBar').style.display='block';
+}
+
+// ─── Submit ──────────────────────────────────────────────────
+function handleSubmit(){
+  const inputs = document.querySelectorAll('.param-input');
+  const allZero = [...inputs].every(i => !parseFloat(i.value));
+  if(allZero){ document.getElementById('zeroModal').classList.add('show'); return; }
+  proceedSubmit();
+}
+
+function closeModal(){ document.getElementById('zeroModal').classList.remove('show'); }
+
+async function proceedSubmit(){
+  closeModal();
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳  Submitting…';
+
+  try{
+    await Promise.all(campaigns.map(c => {
+      const params = (c.parameters || []).map(p => {
+        const el = document.querySelector(`[data-cid="${c.ID}"][data-param="${p.name}"]`);
+        return { name: p.name, value: parseFloat(el?.value)||0 };
+      });
+      return apiPost({ action:'submitData', branch:selectedBranch, date:today,
+                       sheetName:c.SheetName, campaignId:c.ID, parameters:params });
+    }));
+
+    btn.classList.add('success');
+    btn.textContent = '✅  Submitted Successfully!';
+    toast('Report submitted!','success');
+
+    setTimeout(async ()=>{
+      btn.classList.remove('success');
+      btn.disabled = false;
+      btn.textContent = '✓  Submit Today\'s Report';
+      await loadCampaigns();
+    }, 2000);
+
+  }catch(e){
+    toast('Submission failed. Please try again.','error');
+    btn.disabled = false;
+    btn.textContent = '✓  Submit Today\'s Report';
+  }
+}
+
+// ─── Helpers ─────────────────────────────────────────────────
+async function logVisit(branch){
+  try{ await apiPost({ action:'logVisit', branch, date:today }); }catch(_){}
+}
+
+async function apiFetch(url){
+  const r = await fetch(url); const j = await r.json();
+  if(!j.success) throw new Error(j.error);
+  return j;
+}
+
+async function apiPost(body){
+  const r = await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body)});
+  const j = await r.json();
+  if(!j.success) throw new Error(j.error);
+  return j;
+}
+
+function fmtDate(d){
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function fmt(n){
+  return Number(n||0).toLocaleString('en-IN');
+}
+
+function toast(msg, type=''){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast ${type} show`;
+  clearTimeout(el._t);
+  el._t = setTimeout(()=>el.classList.remove('show'), 3200);
+}
+</script>
+</body>
+</html>
