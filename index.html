@@ -699,16 +699,39 @@ async function logVisit(branch){
 }
 
 async function apiFetch(url){
-  const r = await fetch(url); const j = await r.json();
-  if(!j.success) throw new Error(j.error);
-  return j;
+  let rawText = '';
+  try {
+    const r = await fetch(url, { redirect: 'follow', cache: 'no-store' });
+    rawText = await r.text();
+    const j = JSON.parse(rawText);
+    if(!j.success) throw new Error(j.error || 'API error');
+    return j;
+  } catch(e) {
+    if(e instanceof SyntaxError)
+      throw new Error('Server returned HTML instead of JSON — check API URL in index.html');
+    throw e;
+  }
 }
 
 async function apiPost(body){
-  const r = await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body)});
-  const j = await r.json();
-  if(!j.success) throw new Error(j.error);
-  return j;
+  let rawText = '';
+  try {
+    const r = await fetch(API, {
+      method: 'POST',
+      redirect: 'follow',
+      cache: 'no-store',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(body)
+    });
+    rawText = await r.text();
+    const j = JSON.parse(rawText);
+    if(!j.success) throw new Error(j.error || 'API error');
+    return j;
+  } catch(e) {
+    if(e instanceof SyntaxError)
+      throw new Error('Server returned HTML instead of JSON — check API URL in index.html');
+    throw e;
+  }
 }
 
 function fmtDate(d){
