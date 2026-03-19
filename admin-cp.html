@@ -908,26 +908,91 @@ async function removeBranch(name){
 // ─── Setup ────────────────────────────────────────────────────
 async function runSetup(){
   if(!confirm('Initialize the Google Sheet with required tabs and branch data?')) return;
+  const btn = document.querySelector('.tb-setup-btn');
+  const orig = btn.textContent;
+  btn.textContent = '⏳ Setting up…'; btn.disabled = true;
   try{
     const r = await apiFetch(`${API}?action=setup`);
     toast('Sheet setup complete! ✓','success');
     await initApp();
-  }catch(e){ toast('Setup failed: '+e.message,'error'); }
+  }catch(e){
+    toast('Setup failed: '+e.message,'error');
+    // Show detailed help
+    showSetupHelp(e.message);
+  } finally {
+    btn.textContent = orig; btn.disabled = false;
+  }
+}
+
+function showSetupHelp(errMsg){
+  const isHtml = errMsg.includes('DOCTYPE') || errMsg.includes('Unexpected token');
+  const msg = isHtml
+    ? `The Apps Script URL is returning an HTML page instead of JSON.\n\nCommon causes:\n1. URL not updated — still "YOUR_APPS_SCRIPT_URL_HERE"\n2. Apps Script not deployed — go to Deploy → New deployment\n3. Access set to "Only myself" — change to "Anyone"\n4. Script not authorized — open the URL directly in your browser first\n\nCurrent API URL:\n${API}`
+    : `Error: ${errMsg}\n\nCheck the browser console (F12) for more details.`;
+  alert(msg);
 }
 
 // ─── API Helpers ──────────────────────────────────────────────
 async function apiFetch(url){
-  const r = await fetch(url);
-  const j = await r.json();
-  if(!j.success) throw new Error(j.error || 'API error');
-  return j;
+  let rawText = '';
+  try {
+    const r = await fetch(url, {
+      redirect: 'follow',
+      cache: 'no-store'
+    });
+    rawText = await r.text();
+    const j = JSON.parse(rawText);
+    if(!j.success) throw new Error(j.error || 'API returned success:false');
+    return j;
+  } catch(e) {
+    // If JSON parse failed, the response was HTML — surface a clear message
+    if(e instanceof SyntaxError) {
+      const snippet = rawText.slice(0,120).replace(/\n/g,' ');
+      throw new Error(`Got HTML instead of JSON. Response starts with: "${snippet}". Check your Apps Script deployment.`);
+    }
+    throw e;
+  }
 }
+
 async function apiPost(body){
-  const r = await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body)});
-  const j = await r.json();
-  if(!j.success) throw new Error(j.error || 'API error');
-  return j;
+  let rawText = '';
+  try {
+    const r = await fetch(API, {
+      method: 'POST',
+      redirect: 'follow',
+      cache: 'no-store',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(body)
+    });
+    rawText = await r.text();
+    const j = JSON.parse(rawText);
+    if(!j.success) throw new Error(j.error || 'API returned success:false');
+    return j;
+  } catch(e) {
+    if(e instanceof SyntaxError) {
+      const snippet = rawText.slice(0,120).replace(/\n/g,' ');
+      throw new Error(`Got HTML instead of JSON. Response starts with: "${snippet}". Check your Apps Script deployment.`);
+    }
+    throw e;
+  }
 }
+
+// Quick connection test — call from browser console: testConnection()
+async function testConnection(){
+  try {
+    console.log('Testing API connection to:', API);
+    const r = await fetch(`${API}?action=ping`, { redirect:'follow', cache:'no-store' });
+    const text = await r.text();
+    console.log('Raw response:', text);
+    const j = JSON.parse(text);
+    console.log('✅ Connection OK:', j);
+    toast('API connection OK ✓','success');
+  } catch(e) {
+    console.error('❌ Connection failed:', e);
+    toast('Connection failed — check console (F12)','error');
+  }
+}
+window.testConnection = testConnection;
 
 // ─── Utilities ────────────────────────────────────────────────
 function fmtDate(d){
